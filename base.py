@@ -16,6 +16,8 @@ class Base:
         self.CSRF = CSRF
 
     def _get_posts_id(self, username: str) -> list:
+
+        # I will rewrite this part asap.
         res = requests.get(f'https://instagram.com/{username}', cookies=self.sessionid).text
         raw_user_data = res.split('<script type="text/javascript">')[-4].split(';</script>')[0].split('window._sharedData = ')[-1]
         json_user_data = json.loads(raw_user_data)
