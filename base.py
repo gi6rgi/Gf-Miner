@@ -6,7 +6,7 @@
 import requests
 import json
 # for tests
-from config import SESSIONID, CSRF
+from config import SESSIONID, CSRF, USER_AGENT
 
 
 class Base:
@@ -14,9 +14,20 @@ class Base:
     def __init__(self, sessionid, CSRF):
         self.sessionid = sessionid
         self.CSRF = CSRF
+        self.user_agent = USER_AGENT
 
     def _get_user_id(self, username: str) -> str:
-        pass
+        # I'm about to find better way to get this id.
+        url = f'http://instagram.com/{username}'
+        r = requests.get(url, headers=self.user_agent, cookies=self.sessionid).text
+
+        try:
+            result = r.split('profilePage_')[1]
+        except IndexError:
+            return "Wrong username"
+        user_id = result.split('"')[0]
+
+        return user_id
 
     def _get_posts_id(self, username: str) -> list:
         user_id = self._get_user_id(username)
@@ -38,9 +49,3 @@ class Base:
             for post in posts_id[::step][:posts_to_like]:
                 url = f'https://instagram.com/web/likes/{post}/like/'
                 requests.post(url, headers=self.CSRF, cookies=self.sessionid)
-
-"""
-some tests
-"""
-test = Base(SESSIONID, CSRF)
-test.like_posts(["tihomeowrov"], 5, 1)
