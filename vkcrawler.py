@@ -4,6 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from config import REMIXSID, USER_AGENT
 import re
+from time import sleep
 
 
 def get_users_id_from_group(group_id=127149194, age_from=19, age_to=21, amount=200) -> list:
@@ -24,9 +25,9 @@ def get_users_id_from_group(group_id=127149194, age_from=19, age_to=21, amount=2
 
         for user in users_data_raw:
             users_id.append(user["href"][1:])
-            print("added: ", user["href"][1:])
 
         offset += 30
+        sleep(2)
     
     return users_id
 
@@ -35,7 +36,7 @@ def get_instagram_links(users_id: list) -> list:
     instagram_usernames = []
 
     for user in users_id:
-        url = f'https://vk.com/{user}'
+        url = f'https://m.vk.com/{user}'
         res = requests.get(url, headers=USER_AGENT, cookies=REMIXSID)
         soup = BeautifulSoup (res.text, "lxml")
         # Хз почему, но там у вк http в ссылке, на всякий случай регулярку оставил для метода тоже.
@@ -44,4 +45,4 @@ def get_instagram_links(users_id: list) -> list:
         if username:
             instagram_usernames.append(username.text)
 
-        return instagram_usernames
+    return instagram_usernames
