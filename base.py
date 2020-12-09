@@ -43,7 +43,7 @@ class Base:
 
     def like_posts(self, usernames: list, posts_to_like: int, step: int):
         """
-
+        Requires a list of Insta users;
         posts_to_like - amount of posts to like;
         step - likes interval.
         """
