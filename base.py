@@ -5,7 +5,6 @@
 
 import requests
 import json
-# for tests
 from config import SESSIONID, CSRF, USER_AGENT
 
 
@@ -43,6 +42,11 @@ class Base:
         return posts_id
 
     def like_posts(self, usernames: list, posts_to_like: int, step: int):
+        """
+
+        posts_to_like - amount of posts to like;
+        step - likes interval.
+        """
         for username in usernames:
             posts_id = self._get_posts_id(username)
 
