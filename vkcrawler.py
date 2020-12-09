@@ -2,12 +2,13 @@
 
 import requests
 from bs4 import BeautifulSoup
-from config import REMIXSID
+from config import REMIXSID, USER_AGENT
+import re
 
 
 def get_users_id_from_group(group_id=127149194, age_from=19, age_to=21, amount=200) -> list:
     """
-    Чтобы узнать возраст даже тех тян, у кого он скрыт (а скрыт почти у всех), пришлось сделать пока что так;
+    Чтобы узнать возраст даже тех девушек, у кого он скрыт (а скрыт почти у всех), пришлось сделать пока что так;
     Метод сугубо научного тыка показал, что кука remixsid - та самая, которая проверяется при выдаче пользователей;
     Джоуни, прости меня за эту ебанину, но она работает)
     P.S. можно потом с палкой и вайршарком расковырять какие запросы уходят с пролижения мобилы, там то точно REST и красиво.
@@ -31,4 +32,16 @@ def get_users_id_from_group(group_id=127149194, age_from=19, age_to=21, amount=2
 
 
 def get_instagram_links(users_id: list) -> list:
-    pass
+    instagram_usernames = []
+
+    for user in users_id:
+        url = f'https://vk.com/{user}'
+        res = requests.get(url, headers=USER_AGENT, cookies=REMIXSID)
+        soup = BeautifulSoup (res.text, "lxml")
+        # Хз почему, но там у вк http в ссылке, на всякий случай регулярку оставил для метода тоже.
+        username = soup.find('a', href=re.compile(".*://instagram.com/*"))
+
+        if username:
+            instagram_usernames.append(username.text)
+
+        return instagram_usernames
