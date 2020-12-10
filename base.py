@@ -5,15 +5,15 @@
 
 import requests
 import json
-from config import SESSIONID, CSRF, USER_AGENT
+from time import sleep
 
 
-class Base:
+class InstaClient:
 
-    def __init__(self, sessionid, CSRF):
+    def __init__(self, sessionid, CSRF, user_agent):
         self.sessionid = sessionid
         self.CSRF = CSRF
-        self.user_agent = USER_AGENT
+        self.user_agent = user_agent
 
     def _get_user_id(self, username: str) -> str:
         # I'm about to find better way to get this id.
@@ -33,8 +33,11 @@ class Base:
         url = f'https://www.instagram.com/graphql/query/?query_hash=003056d32c2554def87228bc3fd9668a&variables={{"id":"{user_id}","first":12,"after":""}}'
         posts_id_raw_data = requests.get(url).text
         posts_id_json = json.loads(posts_id_raw_data)
-        posts_id_data = posts_id_json["data"]["user"]["edge_owner_to_timeline_media"]["edges"]
-    
+        try:
+            posts_id_data = posts_id_json["data"]["user"]["edge_owner_to_timeline_media"]["edges"]
+        except TypeError:
+            return None
+
         posts_id = []
         for post in posts_id_data:
             posts_id.append(post["node"]["id"])
@@ -50,6 +53,7 @@ class Base:
         for username in usernames:
             posts_id = self._get_posts_id(username)
 
-            for post in posts_id[::step][:posts_to_like]:
-                url = f'https://instagram.com/web/likes/{post}/like/'
-                requests.post(url, headers=self.CSRF, cookies=self.sessionid)
+            if posts_id:
+                for post in posts_id[::step][:posts_to_like]:
+                    url = f'https://instagram.com/web/likes/{post}/like/'
+                    requests.post(url, headers=self.CSRF, cookies=self.sessionid)
