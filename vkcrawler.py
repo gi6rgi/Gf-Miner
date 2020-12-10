@@ -2,9 +2,10 @@
 
 import requests
 from bs4 import BeautifulSoup
-from config import REMIXSID, USER_AGENT
+from config import REMIXSID, USER_AGENT, ACCESS_TOKEN
 import re
 from time import sleep
+import json
 
 
 def get_users_id_from_group(group_id=127149194, age_from=19, age_to=21, amount=200) -> list:
@@ -27,12 +28,14 @@ def get_users_id_from_group(group_id=127149194, age_from=19, age_to=21, amount=2
             users_id.append(user["href"][1:])
 
         offset += 30
-        sleep(2)
     
     return users_id
 
 
 def get_instagram_links(users_id: list) -> list:
+    """
+    Просто вариант сбора инстаграмов без vk api.
+    """
     instagram_usernames = []
 
     for user in users_id:
@@ -45,4 +48,25 @@ def get_instagram_links(users_id: list) -> list:
         if username:
             instagram_usernames.append(username.text)
 
+        sleep(2)
+
     return instagram_usernames
+
+
+def get_instagram_links_vk_api(usernames: list) -> list:
+    users_string = ''
+    for user in usernames:
+        users_string += user + ','
+
+    api_uri = f'https://api.vk.com/method/users.get?user_ids={users_string}&fields=connections&v=5.52&access_token={ACCESS_TOKEN}'
+    users_data = requests.get(api_uri).text
+    users_data_parsed = json.loads(users_data)
+
+    instagram_links = []
+    for user in users_data_parsed["response"]:
+        try:
+            instagram_links.append(user["instagram"])
+        except KeyError:
+            pass
+    
+    return instagram_links
