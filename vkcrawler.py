@@ -18,7 +18,7 @@ class VkCrawler:
         Джоуни, прости меня за эту ебанину, но она работает)
         P.S. можно потом с палкой и вайршарком расковырять какие запросы уходят с пролижения мобилы, там то точно REST и красиво.
         """
-        offset = 50
+        offset = 0
         users_id = []
 
         while offset <= amount:
@@ -34,42 +34,25 @@ class VkCrawler:
 
         return users_id
 
+    # For the sake of Jouny!
+    def _get_chunk_of_users(self, usernames: list) -> list:
+        left_offset = 0
+        right_offset = 100
 
-    def get_instagram_links(self, users_id: list) -> list:
-        """
-        Просто вариант сбора инстаграмов без vk api.
-        """
-        instagram_usernames = []
-
-        for user in users_id:
-            url = f'https://m.vk.com/{user}'
-            res = requests.get(url, headers=USER_AGENT, cookies=self.remixsid)
-            soup = BeautifulSoup (res.text, "lxml")
-            # Хз почему, но там у вк http в ссылке, на всякий случай регулярку оставил для метода тоже.
-            username = soup.find('a', href=re.compile(".*://instagram.com/*"))
-
-            if username:
-                instagram_usernames.append(username.text)
-
-            sleep(2)
-
-        return instagram_usernames
-
-
-    def get_instagram_links_vk_api(self, usernames: list) -> list:
-        users_to_process = len(usernames)
-        all_users_data = []
-
-        # Временная инкостыляция.
-        left_offset = -100
-        right_offset = 0
-        while right_offset <= users_to_process:
-            print(left_offset, right_offset)
+        while True:
+            yield usernames[left_offset:right_offset]
             left_offset += 100
             right_offset += 100
 
+    def get_instagram_links_vk_api(self, usernames: list) -> list:
+        instagram_links = []
+        user_vk_ids = 1
+        chunk_of_users = self._get_chunk_of_users(usernames)
+
+        while user_vk_ids:
+            user_vk_ids = next(chunk_of_users)
             users_string = ''
-            for user in usernames[left_offset:right_offset]:
+            for user in user_vk_ids:
                 users_string += user + ','
 
             api_uri = f'https://api.vk.com/method/users.get?user_ids={users_string}&fields=connections&v=5.52&access_token={self.access_token}'
@@ -78,8 +61,8 @@ class VkCrawler:
 
             for user in users_data_parsed["response"]:
                 try:
-                    all_users_data.append(user["instagram"])
+                    instagram_links.append(user["instagram"])
                 except KeyError:
                     pass
 
-        return all_users_data
+        return instagram_links
