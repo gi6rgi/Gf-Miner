@@ -1,5 +1,3 @@
-# /search?c[section]=people&c[group]=127149194&c[name]=1&c[country]=0&c[sex]=1&c[age_from]=19&c[age_to]=21&c[status]=0&offset=30
-
 import requests
 from bs4 import BeautifulSoup
 import re
@@ -33,7 +31,7 @@ class VkCrawler:
                 users_id.append(user["href"][1:])
 
             offset += 30
-        
+
         return users_id
 
 
@@ -60,8 +58,17 @@ class VkCrawler:
 
     def get_instagram_links_vk_api(self, usernames: list) -> list:
         users_string = ''
-        for user in usernames:
-            users_string += user + ','
+        users_to_process = len(usernames)
+
+        # временный костыль, чтобы обрабатывать неограниченную базу пользователей.
+        offset_left = -100
+        offset_right = 0
+
+        while offset_right <= users_to_process:
+            offset_left += 100
+            offset_right += 100
+            for user in usernames[offset_left:offset_right]:
+                users_string += user + ','
 
         api_uri = f'https://api.vk.com/method/users.get?user_ids={users_string}&fields=connections&v=5.52&access_token={self.access_token}'
         users_data = requests.get(api_uri).text
