@@ -31,12 +31,12 @@ class InstaClient:
     def _get_posts_id(self, username: str) -> list:
         user_id = self._get_user_id(username)
         url = f'https://www.instagram.com/graphql/query/?query_hash=003056d32c2554def87228bc3fd9668a&variables={{"id":"{user_id}","first":12,"after":""}}'
-        posts_id_raw_data = requests.get(url).text
+        posts_id_raw_data = requests.get(url, headers=self.user_agent).text
         posts_id_json = json.loads(posts_id_raw_data)
         try:
             posts_id_data = posts_id_json["data"]["user"]["edge_owner_to_timeline_media"]["edges"]
         except TypeError:
-            return None
+            return [] # Private account.
 
         posts_id = []
         for post in posts_id_data:
@@ -53,7 +53,9 @@ class InstaClient:
         for username in usernames:
             posts_id = self._get_posts_id(username)
 
-            if posts_id:
-                for post in posts_id[::step][:posts_to_like]:
-                    url = f'https://instagram.com/web/likes/{post}/like/'
-                    requests.post(url, headers=self.CSRF, cookies=self.sessionid)
+            for post in posts_id[::step][:posts_to_like]:
+                url = f'https://instagram.com/web/likes/{post}/like/'
+                requests.post(url, headers=self.CSRF, cookies=self.sessionid)
+                sleep(3)
+
+            sleep(3)
