@@ -18,7 +18,7 @@ class VkCrawler:
         Джоуни, прости меня за эту ебанину, но она работает)
         P.S. можно потом с палкой и вайршарком расковырять какие запросы уходят с пролижения мобилы, там то точно REST и красиво.
         """
-        offset = 0
+        offset = 50
         users_id = []
 
         while offset <= amount:
@@ -57,28 +57,29 @@ class VkCrawler:
 
 
     def get_instagram_links_vk_api(self, usernames: list) -> list:
-        users_string = ''
         users_to_process = len(usernames)
+        all_users_data = []
 
-        # временный костыль, чтобы обрабатывать неограниченную базу пользователей.
-        offset_left = -100
-        offset_right = 0
+        # Временная инкостыляция.
+        left_offset = -100
+        right_offset = 0
+        while right_offset <= users_to_process:
+            print(left_offset, right_offset)
+            left_offset += 100
+            right_offset += 100
 
-        while offset_right <= users_to_process:
-            offset_left += 100
-            offset_right += 100
-            for user in usernames[offset_left:offset_right]:
+            users_string = ''
+            for user in usernames[left_offset:right_offset]:
                 users_string += user + ','
 
-        api_uri = f'https://api.vk.com/method/users.get?user_ids={users_string}&fields=connections&v=5.52&access_token={self.access_token}'
-        users_data = requests.get(api_uri).text
-        users_data_parsed = json.loads(users_data)
+            api_uri = f'https://api.vk.com/method/users.get?user_ids={users_string}&fields=connections&v=5.52&access_token={self.access_token}'
+            users_data = requests.get(api_uri).text
+            users_data_parsed = json.loads(users_data)
 
-        instagram_links = []
-        for user in users_data_parsed["response"]:
-            try:
-                instagram_links.append(user["instagram"])
-            except KeyError:
-                pass
+            for user in users_data_parsed["response"]:
+                try:
+                    all_users_data.append(user["instagram"])
+                except KeyError:
+                    pass
 
-        return instagram_links
+        return all_users_data
