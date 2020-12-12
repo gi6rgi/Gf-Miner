@@ -46,11 +46,12 @@ class VkCrawler:
 
     def get_instagram_links_vk_api(self, usernames: list) -> list:
         instagram_links = []
-        user_vk_ids = 1
         chunk_of_users = self._get_chunk_of_users(usernames)
 
-        while user_vk_ids:
-            user_vk_ids = next(chunk_of_users)
+        for user_vk_ids in chunk_of_users:
+            if not user_vk_ids:
+                return instagram_links
+                
             users_string = ''
             for user in user_vk_ids:
                 users_string += user + ','
@@ -64,5 +65,3 @@ class VkCrawler:
                     instagram_links.append(user["instagram"])
                 except KeyError:
                     pass
-
-        return instagram_links
