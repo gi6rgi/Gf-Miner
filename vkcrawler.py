@@ -1,8 +1,6 @@
 import requests
-from bs4 import BeautifulSoup
-import re
-from time import sleep
 import json
+from bs4 import BeautifulSoup
 
 
 class VkCrawler:
@@ -12,56 +10,52 @@ class VkCrawler:
         self.access_token = access_token
 
     def get_users_id_from_group(self, group_id: int, age_from: int, age_to: int, amount: int) -> list:
-        """
-        Чтобы узнать возраст даже тех девушек, у кого он скрыт (а скрыт почти у всех), пришлось сделать пока что так;
-        Метод сугубо научного тыка показал, что кука remixsid - та самая, которая проверяется при выдаче пользователей;
-        Джоуни, прости меня за эту ебанину, но она работает)
-        P.S. можно потом с палкой и вайршарком расковырять какие запросы уходят с пролижения мобилы, там то точно REST и красиво.
-        """
         offset = 0
         users_id = []
 
         while offset <= amount:
-            url = f'https://m.vk.com/search?c[section]=people&c[group]={group_id}&c[name]=1&c[country]=0&c[sex]=1&c[age_from]={age_from}&c[age_to]={age_to}&c[status]=0&offset={offset}'
-            res = requests.get(url, cookies=self.remixsid)
-            soup = BeautifulSoup (res.text, "lxml")
-            users_data_raw = soup.find_all("a", class_="simple_fit_item search_item")
+            uri = f'https://m.vk.com/search?c[age_from]={age_from}&c[age_to]={age_to}' \
+                f'&c[city]=2&c[country]=1&c[group]={group_id}&c[name]=1&c[per_page]=40&c' \
+                f'[photo]=1&c[section]=people&c[sex]=1&offset={offset}'
 
+            res = requests.get(uri, cookies=self.remixsid)
+            soup = BeautifulSoup(res.text, "lxml")
+            users_data_raw = soup.find_all("a", class_="simple_fit_item search_item")
             for user in users_data_raw:
                 users_id.append(user["href"][1:])
-
+            
             offset += 30
 
         return users_id
 
-    # For the sake of Jouny!
     def _get_chunk_of_users(self, usernames: list) -> list:
         left_offset = 0
         right_offset = 100
 
-        while True:
-            yield usernames[left_offset:right_offset]
+        while right_offset <= len(usernames):
             left_offset += 100
             right_offset += 100
+            yield usernames[left_offset:right_offset]
 
     def get_instagram_links_vk_api(self, usernames: list) -> list:
         instagram_links = []
         chunk_of_users = self._get_chunk_of_users(usernames)
 
-        for user_vk_ids in chunk_of_users:
-            if not user_vk_ids:
-                return instagram_links
-                
+        for user_vk_ids in chunk_of_users:                   
             users_string = ''
-            for user in user_vk_ids:
-                users_string += user + ','
+            for user_id in user_vk_ids:
+                users_string += user_id + ','   
 
-            api_uri = f'https://api.vk.com/method/users.get?user_ids={users_string}&fields=connections&v=5.52&access_token={self.access_token}'
-            users_data = requests.get(api_uri).text
-            users_data_parsed = json.loads(users_data)
+            uri = f'https://api.vk.com/method/users.get?user_ids={users_string}&fields=connections' \
+                  f'&v=5.52&access_token={self.access_token}'
+            users_data = requests.get(uri).text
+            users_data_json = json.loads(users_data)
 
-            for user in users_data_parsed["response"]:
+            for user in users_data_json["response"]:
                 try:
                     instagram_links.append(user["instagram"])
                 except KeyError:
                     pass
+        
+        return instagram_links
+ 
