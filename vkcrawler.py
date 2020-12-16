@@ -29,11 +29,10 @@ class VkCrawler:
         return users_id
 
     def _get_chunk_of_users(self, usernames: list) -> list:
-        # Временная инкостыляция.
-        left_offset = -100
-        right_offset = 0
+        left_offset = 0
+        right_offset = 100
 
-        while right_offset <= len(usernames):
+        while left_offset <= len(usernames):
             left_offset += 100
             right_offset += 100
             yield usernames[left_offset:right_offset]
