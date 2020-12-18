@@ -39,14 +39,17 @@ class InstaClient:
         return posts_id
 
     def like_posts(self, usernames: list, posts_to_like: int, step: int):
+        """
+        Requires list of instagram users;
+        Number of posts to like for each user;
+        Step between posts at user acc.
+        """
         for username in usernames:
             posts_id = self._get_posts_id(username)
 
             for post in posts_id[::step][:posts_to_like]:
                 uri = f'{self.url}/web/likes/{post}/like/'
                 requests.post(uri, headers=self.token, cookies=self.sessionid)
+                sleep(2)
             
-            print("Пролайкан пользователь: ", username)
-            
-            sleep(1)
-        sleep(1)
+            sleep(3)
