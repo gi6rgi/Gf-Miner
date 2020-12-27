@@ -9,7 +9,7 @@ class InstaClient:
         self.sessionid = sessionid
         self.token = token
         self.url = 'https://instagram.com'
-        self.headers = user_agent.update(user_agent)
+        self.headers = token.update(user_agent)
 
     def _get_user_id(self, username: str) -> str:
         uri = f'{self.url}/web/search/topsearch/?context=blended&query={username}'
@@ -52,5 +52,6 @@ class InstaClient:
                 uri = f'{self.url}/web/likes/{post}/like/'
                 requests.post(uri, headers=self.headers, cookies=self.sessionid)
                 sleep(2)
+            print(username)
             
             sleep(5)
