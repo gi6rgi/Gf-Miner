@@ -52,6 +52,5 @@ class InstaClient:
                 uri = f'{self.url}/web/likes/{post}/like/'
                 requests.post(uri, headers=self.headers, cookies=self.sessionid)
                 sleep(2)
-            print(username)
             
             sleep(5)
