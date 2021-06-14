@@ -1,3 +1,4 @@
+from typing import Generator
 import requests
 import json
 from bs4 import BeautifulSoup
@@ -28,20 +29,11 @@ class VkCrawler:
 
         return users_id
 
-    def _get_chunk_of_users(self, usernames: list) -> list:
-        left_offset = 0
-        right_offset = 100
-
-        while left_offset <= len(usernames):
-            left_offset += 100
-            right_offset += 100
-            yield usernames[left_offset:right_offset]
-
     def get_instagram_links_vk_api(self, usernames: list) -> list:
         instagram_links = []
-        chunk_of_users = self._get_chunk_of_users(usernames)
+        chunk_of_users: Generator = self._get_chunk_of_users(usernames)
 
-        for user_vk_ids in chunk_of_users:                   
+        for user_vk_ids in chunk_of_users:                
             users_string = ''
             for user_id in user_vk_ids:
                 users_string += user_id + ','   
@@ -59,3 +51,11 @@ class VkCrawler:
         
         return instagram_links
  
+    def _get_chunk_of_users(self, usernames: list) -> list:
+        left_offset = 0
+        right_offset = 100
+
+        while left_offset <= len(usernames):
+            yield usernames[left_offset:right_offset]
+            left_offset += 100
+            right_offset += 100
