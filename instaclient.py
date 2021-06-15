@@ -10,6 +10,24 @@ class InstaClient:
         self.url = 'https://instagram.com'
         self.headers = headers
 
+    def like_posts(self, usernames: list, posts_to_like: int, step: int):
+        """
+        Requires list of instagram users;
+        Number of posts to like for each user;
+        Step between posts at user acc.
+        """
+        for username in usernames:
+            posts_id = self._get_posts_id(username)
+
+            for post in posts_id[::step][:posts_to_like]:
+                uri = f'{self.url}/web/likes/{post}/like/'
+                resp = requests.post(uri, headers=self.headers, cookies=self.sessionid)
+                print(resp)
+                print(f'Dickpick has been sent to {username}\n')
+                sleep(15)
+            
+        sleep(30)
+
     def _get_user_id(self, username: str) -> str:
         uri = f'{self.url}/web/search/topsearch/?context=blended&query={username}'
         user_data_raw = requests.get(uri, headers=self.headers, cookies=self.sessionid).text
@@ -37,21 +55,3 @@ class InstaClient:
             posts_id.append(post["node"]["id"])
         
         return posts_id
-
-    def like_posts(self, usernames: list, posts_to_like: int, step: int):
-        """
-        Requires list of instagram users;
-        Number of posts to like for each user;
-        Step between posts at user acc.
-        """
-        for username in usernames:
-            posts_id = self._get_posts_id(username)
-
-            for post in posts_id[::step][:posts_to_like]:
-                uri = f'{self.url}/web/likes/{post}/like/'
-                resp = requests.post(uri, headers=self.headers, cookies=self.sessionid)
-                print(resp)
-                print(f'Dickpick has been sent to {username}\n')
-                sleep(15)
-            
-        sleep(30)
