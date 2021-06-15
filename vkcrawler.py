@@ -39,7 +39,7 @@ class VkCrawler:
                 users_string += user_id + ','   
 
             uri = f'https://api.vk.com/method/users.get?user_ids={users_string}&fields=connections' \
-                  f'&v=5.52&access_token={self.access_token}'
+                  f'&v=5.131&access_token={self.access_token}'
             users_data = requests.get(uri).text
             users_data_json = json.loads(users_data)
 

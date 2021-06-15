@@ -5,11 +5,10 @@ from time import sleep
 
 class InstaClient:
 
-    def __init__(self, sessionid, token, user_agent):
+    def __init__(self, sessionid, headers):
         self.sessionid = sessionid
-        self.token = token
         self.url = 'https://instagram.com'
-        self.headers = token.update(user_agent)
+        self.headers = headers
 
     def _get_user_id(self, username: str) -> str:
         uri = f'{self.url}/web/search/topsearch/?context=blended&query={username}'
@@ -50,7 +49,9 @@ class InstaClient:
 
             for post in posts_id[::step][:posts_to_like]:
                 uri = f'{self.url}/web/likes/{post}/like/'
-                requests.post(uri, headers=self.headers, cookies=self.sessionid)
-                sleep(2)
+                resp = requests.post(uri, headers=self.headers, cookies=self.sessionid)
+                print(resp)
+                print(f'Dickpick has been sent to {username}\n')
+                sleep(15)
             
-            sleep(5)
+        sleep(30)
